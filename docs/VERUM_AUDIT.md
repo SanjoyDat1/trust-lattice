@@ -26,7 +26,7 @@ Approximate Verum MCP calls for this project: **7** (shared multi-project sessio
 
 | Command | Result |
 |---------|--------|
-| `npm test` | PASS — 9/9 |
+| `npm test` | PASS — 16/16 (post-remediation) |
 | `npm run typecheck` | PASS |
 
 ## Findings
