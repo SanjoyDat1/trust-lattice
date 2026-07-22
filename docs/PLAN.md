@@ -12,8 +12,8 @@ Scaffold, core library, MCP + CLI, Vite dashboard, tests, and security remediati
 
 ## Phase 6 — Ship
 
-1. [ ] Conventional commits.
-2. [ ] `gh repo create SanjoyDat1/trust-lattice --public --source=. --remote=origin --push` (fallback: push if exists).
+1. [x] Conventional commits.
+2. [x] `gh repo create SanjoyDat1/trust-lattice --public --source=. --remote=origin --push`
 
 ## Acceptance checklist
 
@@ -24,4 +24,4 @@ Scaffold, core library, MCP + CLI, Vite dashboard, tests, and security remediati
 - [x] Seed + tests green
 - [x] README with Cursor config
 - [x] No secrets
-- [ ] GitHub public repo pushed
+- [x] GitHub public repo pushed
