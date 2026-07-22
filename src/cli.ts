@@ -17,10 +17,12 @@ Usage:
   trust-lattice query <fromId> <toId> [--db <path>]
   trust-lattice gate <actorId> <targetId> <riskTier> <action...> [--db <path>]
   trust-lattice export [json|mermaid|dot] [--db <path>]
+  trust-lattice promote <nodeId> <unverified|email|pubkey|org> [--issuer <id>] [--db <path>]
 
 Env:
-  TRUST_LATTICE_DB       SQLite path (default: ./data/trust-lattice.db)
-  TRUST_LATTICE_POLICY   Policy JSON path
+  TRUST_LATTICE_DB            SQLite path (default: ./data/trust-lattice.db)
+  TRUST_LATTICE_POLICY        Policy JSON path
+  TRUST_LATTICE_ADMIN_TOKEN   Required for MCP mutating tools (min 16 chars)
 `);
   process.exit(1);
 }
@@ -125,6 +127,27 @@ async function main(): Promise<void> {
     if (!["json", "mermaid", "dot"].includes(format)) usage();
     const engine = openEngine(flags);
     console.log(engine.export(format));
+    engine.store.close();
+    return;
+  }
+
+  if (cmd === "promote") {
+    const nodeId = positionals[1];
+    const verification = positionals[2];
+    if (
+      !nodeId ||
+      !verification ||
+      !["unverified", "email", "pubkey", "org"].includes(verification)
+    ) {
+      usage();
+    }
+    const issuer = flags.get("issuer");
+    const engine = openEngine(flags);
+    const node = engine.setIdentityVerification(nodeId, {
+      verification: verification as "unverified" | "email" | "pubkey" | "org",
+      ...(typeof issuer === "string" ? { issuer } : {}),
+    });
+    console.log(JSON.stringify({ ok: true, node }, null, 2));
     engine.store.close();
     return;
   }

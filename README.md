@@ -44,7 +44,8 @@ Add to your Cursor MCP settings (path may vary by OS):
       "command": "node",
       "args": ["/ABS/PATH/TO/trust-lattice/dist/index.js"],
       "env": {
-        "TRUST_LATTICE_DB": "/ABS/PATH/TO/trust-lattice/data/trust-lattice.db"
+        "TRUST_LATTICE_DB": "/ABS/PATH/TO/trust-lattice/data/trust-lattice.db",
+        "TRUST_LATTICE_ADMIN_TOKEN": "replace-with-a-long-random-secret"
       }
     }
   }
@@ -60,12 +61,15 @@ Or during development:
       "command": "npx",
       "args": ["tsx", "/ABS/PATH/TO/trust-lattice/src/index.ts"],
       "env": {
-        "TRUST_LATTICE_DB": "/ABS/PATH/TO/trust-lattice/data/trust-lattice.db"
+        "TRUST_LATTICE_DB": "/ABS/PATH/TO/trust-lattice/data/trust-lattice.db",
+        "TRUST_LATTICE_ADMIN_TOKEN": "replace-with-a-long-random-secret"
       }
     }
   }
 }
 ```
+
+Mutating tools (`tl_register_node`, `tl_attest`, `tl_challenge`, `tl_endorse`, `tl_promote_identity`, pubkey challenge tools) require an `adminToken` argument that matches `TRUST_LATTICE_ADMIN_TOKEN` (min 16 chars). Writes fail closed when the env token is unset.
 
 ### CLI
 
@@ -74,6 +78,7 @@ npx tsx src/cli.ts seed --force
 npx tsx src/cli.ts query agent:planner tool:web-search
 npx tsx src/cli.ts gate agent:planner tool:shell write "run sandbox command"
 npx tsx src/cli.ts export mermaid
+npx tsx src/cli.ts promote agent:researcher email --issuer research@acme.test
 ```
 
 ### Dashboard
@@ -87,14 +92,16 @@ npm run dev
 
 | Tool | Description |
 |------|-------------|
-| `tl_register_node` | Register/update agent, tool, or claim_source |
-| `tl_attest` | Positive evidence on an edge |
-| `tl_challenge` | Negative evidence on an edge |
-| `tl_endorse` | Path-scaled endorsement |
-| `tl_query_trust` | Decayed trust + paths |
-| `tl_gate_action` | Allow/deny with explanation |
-| `tl_explain_path` | Supporting paths |
-| `tl_export_graph` | `json` \| `mermaid` \| `dot` |
+| `tl_register_node` | Register/update node (always unverified; needs `adminToken`) |
+| `tl_promote_identity` | Operator promote verification level (`adminToken`) |
+| `tl_begin_pubkey_challenge` / `tl_complete_pubkey_challenge` | Ed25519 proof → `pubkey` |
+| `tl_attest` | Positive evidence on an edge (`adminToken`) |
+| `tl_challenge` | Negative evidence on an edge (`adminToken`) |
+| `tl_endorse` | Path-scaled endorsement (`adminToken`) |
+| `tl_query_trust` | Decayed trust + paths (read) |
+| `tl_gate_action` | Allow/deny with explanation (read; advisory) |
+| `tl_explain_path` | Supporting paths (read) |
+| `tl_export_graph` | `json` \| `mermaid` \| `dot` (read) |
 
 ## Policy
 
@@ -102,10 +109,13 @@ Default policy lives in [`policies/default.json`](policies/default.json). Overri
 
 ## Security
 
-- No API keys or secrets are required or stored in-repo.
+- Set `TRUST_LATTICE_ADMIN_TOKEN` (≥16 chars) for MCP writes; mutating tools fail closed without it.
+- Clients cannot set `identity.verification` via `registerNode` / `tl_register_node` — only operator `promote` / `tl_promote_identity` or a completed Ed25519 pubkey challenge.
+- Email/org verification remain operator stubs (no external IdP); pubkey requires a signature challenge.
 - Treat the SQLite DB as sensitive operational state.
 - MCP logs only to stderr (stdio transport).
 - Dashboard binds to `127.0.0.1` by default.
+- Gate decisions are advisory — orchestrators must enforce deny.
 
 ## License
 

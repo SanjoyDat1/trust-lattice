@@ -117,6 +117,11 @@ export interface RegisterNodeInput {
   id: string;
   kind: NodeKind;
   label: string;
+  /**
+   * Ignored for elevation. Registration always starts (or preserves) identity
+   * as unverified / existing — use TrustEngine.setIdentityVerification (operator)
+   * or completePubkeyChallenge for pubkey.
+   */
   identity?: IdentityStub;
   metadata?: Record<string, unknown>;
 }

@@ -182,7 +182,7 @@ This rewards independent support paths without exceeding 1. Alternative `max_pro
 1. **Influence caps** by `identity.verification` (unverified nodes cannot swing irreversible gates alone).
 2. **Endorsement quorum** per risk tier (`minEndorsements` from distinct verified actors).
 3. **Self-attest discount** so bootstrapping is possible but weak.
-4. Identity is a **stub**: no crypto verification in v1 — callers supply declared levels; production deployments should wire real identity providers later.
+4. Identity elevation is **operator-controlled**: `registerNode` / MCP registration cannot set `verification` (always starts unverified). Promote via CLI/`tl_promote_identity` (admin token) or Ed25519 `tl_*_pubkey_challenge`. Email/org remain stubs (no external IdP); wire real IdPs in production.
 
 ## Gate evaluation
 

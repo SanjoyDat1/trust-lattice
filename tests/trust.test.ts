@@ -133,20 +133,19 @@ describe("engine gate", () => {
       id: "a",
       kind: "agent",
       label: "A",
-      identity: { verification: "org" },
     });
+    engine.setIdentityVerification("a", { verification: "org" });
     engine.registerNode({
       id: "b",
       kind: "agent",
       label: "B",
-      identity: { verification: "unverified" },
     });
     engine.registerNode({
       id: "t",
       kind: "tool",
       label: "T",
-      identity: { verification: "org" },
     });
+    engine.setIdentityVerification("t", { verification: "org" });
     engine.attest({
       fromId: "a",
       toId: "t",

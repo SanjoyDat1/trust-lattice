@@ -33,18 +33,42 @@ export class TrustEngine {
     readonly policy: TrustPolicy,
   ) {}
 
+  /**
+   * Register or update a node. Client-supplied `identity` is intentionally
+   * ignored so MCP/API callers cannot spoof verification levels. New nodes
+   * are always `unverified`; updates preserve the existing identity.
+   * Elevate via {@link setIdentityVerification} or pubkey challenge completion.
+   */
   registerNode(input: RegisterNodeInput): TrustNode {
     const existing = this.store.getNode(input.id);
     const node: TrustNode = {
       id: input.id,
       kind: input.kind,
       label: input.label,
-      identity: input.identity ??
-        existing?.identity ?? { verification: "unverified" },
+      identity: existing?.identity ?? { verification: "unverified" },
       metadata: input.metadata ?? existing?.metadata ?? {},
       createdAt: existing?.createdAt ?? nowIso(),
     };
     return this.store.upsertNode(node);
+  }
+
+  /**
+   * Operator-only identity promotion. Callers (CLI/MCP) must authenticate
+   * before invoking this — the engine itself does not check secrets.
+   */
+  setIdentityVerification(
+    nodeId: string,
+    identity: { verification: VerificationLevel; issuer?: string },
+  ): TrustNode {
+    const existing = this.requireNode(nodeId);
+    const next: TrustNode = {
+      ...existing,
+      identity: {
+        verification: identity.verification,
+        ...(identity.issuer !== undefined ? { issuer: identity.issuer } : {}),
+      },
+    };
+    return this.store.upsertNode(next);
   }
 
   private requireNode(id: string): TrustNode {

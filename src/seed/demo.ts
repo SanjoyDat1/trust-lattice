@@ -12,55 +12,74 @@ export function seedDemoGraph(engine: TrustEngine, options?: { force?: boolean }
     id: "agent:orchestrator",
     kind: "agent",
     label: "Orchestrator",
-    identity: { verification: "org", issuer: "acme.internal" },
+  });
+  engine.setIdentityVerification("agent:orchestrator", {
+    verification: "org",
+    issuer: "acme.internal",
   });
   engine.registerNode({
     id: "agent:planner",
     kind: "agent",
     label: "Planner",
-    identity: { verification: "pubkey", issuer: "did:key:planner" },
+  });
+  engine.setIdentityVerification("agent:planner", {
+    verification: "pubkey",
+    issuer: "did:key:planner",
   });
   engine.registerNode({
     id: "agent:researcher",
     kind: "agent",
     label: "Researcher",
-    identity: { verification: "email", issuer: "research@acme.test" },
+  });
+  engine.setIdentityVerification("agent:researcher", {
+    verification: "email",
+    issuer: "research@acme.test",
   });
   engine.registerNode({
     id: "agent:sybil-bot",
     kind: "agent",
     label: "Sybil Bot",
-    identity: { verification: "unverified" },
   });
   engine.registerNode({
     id: "tool:web-search",
     kind: "tool",
     label: "Web Search",
-    identity: { verification: "org", issuer: "acme.tools" },
+  });
+  engine.setIdentityVerification("tool:web-search", {
+    verification: "org",
+    issuer: "acme.tools",
   });
   engine.registerNode({
     id: "tool:shell",
     kind: "tool",
     label: "Shell Executor",
-    identity: { verification: "org", issuer: "acme.tools" },
+  });
+  engine.setIdentityVerification("tool:shell", {
+    verification: "org",
+    issuer: "acme.tools",
   });
   engine.registerNode({
     id: "tool:payments",
     kind: "tool",
     label: "Payments API",
-    identity: { verification: "org", issuer: "acme.tools" },
+  });
+  engine.setIdentityVerification("tool:payments", {
+    verification: "org",
+    issuer: "acme.tools",
   });
   engine.registerNode({
     id: "source:docs",
     kind: "claim_source",
     label: "Internal Docs",
-    identity: { verification: "org", issuer: "acme.internal" },
+  });
+  engine.setIdentityVerification("source:docs", {
+    verification: "org",
+    issuer: "acme.internal",
   });
   engine.registerNode({
     id: "source:rumor",
     kind: "claim_source",
     label: "Rumor Feed",
-    identity: { verification: "unverified" },
   });
 
   // Strong orchestrator trust in planner
