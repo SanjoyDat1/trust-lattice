@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "priors": { "alpha": 1, "beta": 1 },
+  "decay": { "defaultHalfLifeHours": 168 },
+  "identity": {
+    "influenceCaps": {
+      "unverified": 0.25,
+      "email": 0.5,
+      "pubkey": 0.85,
+      "org": 1.0
+    },
+    "selfAttestDiscount": 0.35
+  },
+  "path": {
+    "maxDepth": 4,
+    "minEdgeTrust": 0.15,
+    "aggregation": "noisy_or_product"
+  },
+  "tiers": {
+    "read": { "minTrust": 0.35, "minEndorsements": 0 },
+    "write": { "minTrust": 0.55, "minEndorsements": 1 },
+    "irreversible": {
+      "minTrust": 0.75,
+      "minEndorsements": 2,
+      "requireVerifiedActor": true
+    }
+  }
+}
