@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { assertAdminToken } from "./auth/admin.js";
 import { TrustEngine } from "./core/engine.js";
 import { serveMcp } from "./mcp/server.js";
 import { loadDefaultPolicy, loadPolicyFile } from "./policy.js";
@@ -17,12 +18,12 @@ Usage:
   trust-lattice query <fromId> <toId> [--db <path>]
   trust-lattice gate <actorId> <targetId> <riskTier> <action...> [--db <path>]
   trust-lattice export [json|mermaid|dot] [--db <path>]
-  trust-lattice promote <nodeId> <unverified|email|pubkey|org> [--issuer <id>] [--db <path>]
+  trust-lattice promote <nodeId> <unverified|email|pubkey|org> [--issuer <id>] [--admin-token <secret>] [--db <path>]
 
 Env:
   TRUST_LATTICE_DB            SQLite path (default: ./data/trust-lattice.db)
   TRUST_LATTICE_POLICY        Policy JSON path
-  TRUST_LATTICE_ADMIN_TOKEN   Required for MCP mutating tools (min 16 chars)
+  TRUST_LATTICE_ADMIN_TOKEN   Required for MCP writes and CLI promote (min 16 chars)
 `);
   process.exit(1);
 }
@@ -140,6 +141,16 @@ async function main(): Promise<void> {
       !["unverified", "email", "pubkey", "org"].includes(verification)
     ) {
       usage();
+    }
+    const provided =
+      (typeof flags.get("admin-token") === "string"
+        ? String(flags.get("admin-token"))
+        : undefined) ?? process.env.TRUST_LATTICE_ADMIN_TOKEN;
+    try {
+      assertAdminToken(provided);
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
     }
     const issuer = flags.get("issuer");
     const engine = openEngine(flags);

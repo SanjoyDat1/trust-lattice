@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -64,11 +65,16 @@ const adminTokenSchema = z
 /** Authorize a mutating MCP tool; fails closed without a configured env token. */
 export function authorizeMcpWrite(
   adminToken: string | undefined,
-  rateKey: string,
+  toolName: string,
   env: NodeJS.ProcessEnv = process.env,
 ): void {
   assertAdminToken(adminToken, env);
-  assertWriteRateLimit(rateKey);
+  // Rate-limit by tool + token identity (not client-supplied actorId).
+  const tokenKey = createHash("sha256")
+    .update(adminToken ?? "")
+    .digest("hex")
+    .slice(0, 16);
+  assertWriteRateLimit(`${toolName}:${tokenKey}`);
 }
 
 export function createMcpServer(
@@ -218,7 +224,7 @@ export function createMcpServer(
     },
     async (args) => {
       try {
-        authorizeMcpWrite(args.adminToken, `tl_attest:${args.actorId}`, env);
+        authorizeMcpWrite(args.adminToken, "tl_attest", env);
         const result = engine.attest(args);
         return textResult({ ok: true, ...result });
       } catch (err) {
@@ -244,7 +250,7 @@ export function createMcpServer(
     },
     async (args) => {
       try {
-        authorizeMcpWrite(args.adminToken, `tl_challenge:${args.actorId}`, env);
+        authorizeMcpWrite(args.adminToken, "tl_challenge", env);
         const result = engine.challenge(args);
         return textResult({ ok: true, ...result });
       } catch (err) {
@@ -272,7 +278,7 @@ export function createMcpServer(
     },
     async (args) => {
       try {
-        authorizeMcpWrite(args.adminToken, `tl_endorse:${args.actorId}`, env);
+        authorizeMcpWrite(args.adminToken, "tl_endorse", env);
         const result = engine.endorse({
           fromId: args.fromId ?? args.actorId,
           toId: args.toId,

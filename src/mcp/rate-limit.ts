@@ -12,6 +12,7 @@ export class RateLimitError extends Error {
 /**
  * Allow at most `limit` events per `windowMs` for `key`.
  * Defaults: 60 writes / minute.
+ * Keys with no recent hits are evicted.
  */
 export function assertWriteRateLimit(
   key: string,
@@ -27,6 +28,17 @@ export function assertWriteRateLimit(
   }
   recent.push(nowMs);
   hits.set(key, recent);
+
+  // Evict idle buckets so rotating keys cannot grow the map unboundedly.
+  for (const [k, times] of hits) {
+    if (k === key) continue;
+    const alive = times.filter((t) => nowMs - t < windowMs);
+    if (alive.length === 0) {
+      hits.delete(k);
+    } else {
+      hits.set(k, alive);
+    }
+  }
 }
 
 /** Test helper. */

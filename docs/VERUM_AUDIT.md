@@ -95,11 +95,13 @@ Approximate Verum MCP calls for this project: **7** (shared multi-project sessio
 
 ### Residual risk
 
-- **Email/org verification** remain operator stubs — a holder of `TRUST_LATTICE_ADMIN_TOKEN` (or local DB/CLI access) can still promote arbitrarily; there is no external IdP proof.
+- **Email/org verification** remain operator stubs — a holder of `TRUST_LATTICE_ADMIN_TOKEN` can still promote arbitrarily; there is no external IdP proof.
 - **Stdio MCP** trust model: anyone who can invoke the MCP process *and* knows the admin token can mutate the graph; protect the token like a root secret.
+- **Direct SQLite / library access** still bypasses MCP/CLI auth (host compromise = full graph control).
 - **Gate remains advisory** (TL-03) — deny responses do not wrap tool execution.
 - **Dashboard APIs** (TL-04) still unauthenticated on loopback.
-- **Library `setIdentityVerification`** has no built-in auth — callers must gate it (MCP/CLI do).
+- **Read MCP tools** remain unauthenticated by design (graph export/query).
+- Post-remediation security-auditor: **0 Critical / 0 High**; Mediums around CLI promote and rate-limit keys addressed in follow-up hardening.
 
 ### Re-audit note
 

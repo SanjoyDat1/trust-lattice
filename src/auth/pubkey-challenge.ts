@@ -18,10 +18,19 @@ interface PendingChallenge {
 }
 
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
+const MAX_PENDING = 1000;
 const pending = new Map<string, PendingChallenge>();
 
 function challengeMessage(nodeId: string, nonce: string): string {
   return `trust-lattice:pubkey:${nodeId}:${nonce}`;
+}
+
+function pruneExpired(nowMs: number): void {
+  for (const [id, entry] of pending) {
+    if (nowMs > entry.expiresAtMs) {
+      pending.delete(id);
+    }
+  }
 }
 
 /** Start an Ed25519 signature challenge for promoting a node to `pubkey`. */
@@ -30,6 +39,10 @@ export function beginPubkeyChallenge(
   ttlMs = DEFAULT_TTL_MS,
   nowMs = Date.now(),
 ): { challenge: string; expiresAt: string } {
+  pruneExpired(nowMs);
+  if (!pending.has(nodeId) && pending.size >= MAX_PENDING) {
+    throw new PubkeyChallengeError("Too many pending pubkey challenges");
+  }
   const nonce = randomBytes(32).toString("base64url");
   const expiresAtMs = nowMs + ttlMs;
   pending.set(nodeId, { nonce, expiresAtMs });
